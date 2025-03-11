@@ -10,9 +10,9 @@ import com.baidu.location.BDLocation;
 import com.baidu.location.LocationClient;
 import com.baidu.location.LocationClientOption;
 import com.baidu.mapapi.map.BaiduMap;
-import com.baidu.mapapi.map.MapView;
-import com.baidu.mapapi.map.MapStatus;
 import com.baidu.mapapi.map.MapStatusUpdateFactory;
+import com.baidu.mapapi.map.MapView;
+import com.baidu.mapapi.map.MyLocationConfiguration;
 import com.baidu.mapapi.map.MyLocationData;
 import com.baidu.mapapi.model.LatLng;
 
@@ -20,6 +20,7 @@ public class MainActivity extends Activity {
     private MapView mMapView = null;
     private BaiduMap mBaiduMap;
     private LocationClient mLocationClient;
+    private boolean isFirstLocation = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,12 +36,17 @@ public class MainActivity extends Activity {
         // 卫星地图
         mBaiduMap.setMapType(BaiduMap.MAP_TYPE_SATELLITE);
 
+        // 设置小蓝点
+        mBaiduMap.setMyLocationEnabled(true);
+        mBaiduMap.setMyLocationConfiguration(new MyLocationConfiguration(
+                MyLocationConfiguration.LocationMode.NORMAL, true, null));
+
         try {
             mLocationClient = new LocationClient(getApplicationContext());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        mLocationClient.registerLocationListener(new MyLocationListener(mMapView, mBaiduMap));
+        mLocationClient.registerLocationListener(new MyLocationListener(mBaiduMap));
 
         // 配置定位参数
         initLocation();
@@ -49,6 +55,7 @@ public class MainActivity extends Activity {
         btnGetLocation.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                isFirstLocation = true;
                 mLocationClient.start();
             }
         });
@@ -87,37 +94,5 @@ public class MainActivity extends Activity {
         super.onDestroy();
         mMapView.onDestroy();
         mLocationClient.stop();
-    }
-
-    public class MyLocationListener extends BDAbstractLocationListener {
-        private final BaiduMap mBaiduMap;
-
-        public MyLocationListener(MapView mapView, BaiduMap baiduMap) {
-            this.mBaiduMap = baiduMap;
-        }
-
-        @Override
-        public void onReceiveLocation(BDLocation location) {
-            if (location != null && mBaiduMap != null) {
-                double latitude = location.getLatitude();
-                double longitude = location.getLongitude();
-                Log.d("Location", "Latitude: " + latitude + ", Longitude: " + longitude);
-
-                MyLocationData locData = new MyLocationData.Builder()
-                        .accuracy(location.getRadius())
-                        .direction(100)
-                        .latitude(latitude)
-                        .longitude(longitude)
-                        .build();
-                mBaiduMap.setMyLocationData(locData);
-
-                LatLng latLng = new LatLng(latitude, longitude);
-                MapStatus.Builder builder = new MapStatus.Builder();
-                builder.target(latLng).zoom(18.0f);
-                mBaiduMap.setMapStatus(MapStatusUpdateFactory.newMapStatus(builder.build()));
-
-                Log.d("Set location to", "Latitude: " + latitude + ", Longitude: " + longitude);
-            }
-        }
     }
 }

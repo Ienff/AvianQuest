@@ -12,8 +12,9 @@ import com.baidu.mapapi.model.LatLng;
 
 public class MyLocationListener extends BDAbstractLocationListener {
     private final BaiduMap mBaiduMap;
+    boolean isFirstLocation = true;
 
-    public MyLocationListener(MapView mapView, BaiduMap baiduMap) {
+    public MyLocationListener(BaiduMap baiduMap) {
         this.mBaiduMap = baiduMap;
     }
 
@@ -32,12 +33,11 @@ public class MyLocationListener extends BDAbstractLocationListener {
                     .build();
             mBaiduMap.setMyLocationData(locData);
 
-            LatLng latLng = new LatLng(latitude, longitude);
-            MapStatus.Builder builder = new MapStatus.Builder();
-            builder.target(latLng).zoom(18.0f);
-            mBaiduMap.setMapStatus(MapStatusUpdateFactory.newMapStatus(builder.build()));
-
-            Log.d("Set location to", "Latitude: " + latitude + ", Longitude: " + longitude);
+            if (isFirstLocation) {
+                LatLng latLng = new LatLng(latitude, longitude);
+                mBaiduMap.animateMapStatus(MapStatusUpdateFactory.newLatLngZoom(latLng, 18.0f));
+                isFirstLocation = false;
+            }
         }
     }
 }
