@@ -14,6 +14,7 @@ public class MyLocationListener extends BDAbstractLocationListener {
     private double lastLatitude = 0;
     private double lastLongitude = 0;
     private boolean shouldCenterMap = true;
+    private float direction = 0;  // Default direction (North)
 
     public MyLocationListener(BaiduMap baiduMap) {
         this.mBaiduMap = baiduMap;
@@ -26,13 +27,7 @@ public class MyLocationListener extends BDAbstractLocationListener {
             lastLongitude = location.getLongitude();
             Log.d("Location", "Latitude: " + lastLatitude + ", Longitude: " + lastLongitude);
 
-            MyLocationData locData = new MyLocationData.Builder()
-                    .accuracy(location.getRadius())
-                    .direction(100)
-                    .latitude(lastLatitude)
-                    .longitude(lastLongitude)
-                    .build();
-            mBaiduMap.setMyLocationData(locData);
+            updateLocationData();
 
             if (isFirstLocation || shouldCenterMap) {
                 centerMapToLocation();
@@ -51,5 +46,24 @@ public class MyLocationListener extends BDAbstractLocationListener {
 
     public void requestCenterOnNextLocation() {
         shouldCenterMap = true;
+    }
+
+    // New method to update the direction
+    public void updateDirection(float newDirection) {
+        this.direction = newDirection;
+        updateLocationData();
+    }
+
+    // Method to update location data with current position and direction
+    private void updateLocationData() {
+        if (lastLatitude != 0 && lastLongitude != 0) {
+            MyLocationData locData = new MyLocationData.Builder()
+                    .accuracy(50) // Default accuracy if not available
+                    .direction(direction)  // Use the current direction
+                    .latitude(lastLatitude)
+                    .longitude(lastLongitude)
+                    .build();
+            mBaiduMap.setMyLocationData(locData);
+        }
     }
 }

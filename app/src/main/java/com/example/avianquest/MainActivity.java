@@ -1,26 +1,30 @@
 package com.example.avianquest;
 
 import android.app.Activity;
+import android.content.Context;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import com.baidu.location.BDAbstractLocationListener;
-import com.baidu.location.BDLocation;
 import com.baidu.location.LocationClient;
 import com.baidu.location.LocationClientOption;
 import com.baidu.mapapi.map.BaiduMap;
-import com.baidu.mapapi.map.MapStatusUpdateFactory;
 import com.baidu.mapapi.map.MapView;
 import com.baidu.mapapi.map.MyLocationConfiguration;
-import com.baidu.mapapi.map.MyLocationData;
-import com.baidu.mapapi.model.LatLng;
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements SensorEventListener {
     private MapView mMapView = null;
     private BaiduMap mBaiduMap;
     private LocationClient mLocationClient;
     private MyLocationListener myLocationListener;
+
+    // Orientation sensors
+    private SensorManager mSensorManager;
+    private Sensor mOrientationSensor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +56,9 @@ public class MainActivity extends Activity {
         // 配置定位参数
         initLocation();
 
+        // 初始化方向传感器
+        initOrientationSensor();
+
         Button btnGetLocation = findViewById(R.id.btn_get_location);
         btnGetLocation.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -65,6 +72,14 @@ public class MainActivity extends Activity {
                 }
             }
         });
+    }
+
+    private void initOrientationSensor() {
+        // 初始化传感器
+        mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        if (mSensorManager != null) {
+            mOrientationSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION);
+        }
     }
 
     private void initLocation() {
@@ -87,12 +102,22 @@ public class MainActivity extends Activity {
     protected void onResume() {
         super.onResume();
         mMapView.onResume();
+
+        // 注册传感器监听
+        if (mSensorManager != null && mOrientationSensor != null) {
+            mSensorManager.registerListener(this, mOrientationSensor, SensorManager.SENSOR_DELAY_NORMAL);
+        }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         mMapView.onPause();
+
+        // 取消传感器监听
+        if (mSensorManager != null) {
+            mSensorManager.unregisterListener(this);
+        }
     }
 
     @Override
@@ -100,5 +125,22 @@ public class MainActivity extends Activity {
         super.onDestroy();
         mMapView.onDestroy();
         mLocationClient.stop();
+    }
+
+    // SensorEventListener 接口实现
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+        if (event.sensor.getType() == Sensor.TYPE_ORIENTATION) {
+            float direction = event.values[0]; // 0=北, 90=东, 180=南, 270=西
+            Log.d("Sensor", "Direction: " + direction);
+            if (myLocationListener != null) {
+                myLocationListener.updateDirection(direction);
+            }
+        }
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+        // 精度变化时的处理，可以不做任何操作
     }
 }
