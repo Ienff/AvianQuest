@@ -20,7 +20,7 @@ public class MainActivity extends Activity {
     private MapView mMapView = null;
     private BaiduMap mBaiduMap;
     private LocationClient mLocationClient;
-    private boolean isFirstLocation = true;
+    private MyLocationListener myLocationListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,7 +46,8 @@ public class MainActivity extends Activity {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        mLocationClient.registerLocationListener(new MyLocationListener(mBaiduMap));
+        myLocationListener = new MyLocationListener(mBaiduMap);
+        mLocationClient.registerLocationListener(myLocationListener);
 
         // 配置定位参数
         initLocation();
@@ -55,8 +56,13 @@ public class MainActivity extends Activity {
         btnGetLocation.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                isFirstLocation = true;
-                mLocationClient.start();
+                myLocationListener.requestCenterOnNextLocation();
+                if (!mLocationClient.isStarted()) {
+                    mLocationClient.start();
+                } else {
+                    // If already started, directly center to the last known location
+                    myLocationListener.centerMapToLocation();
+                }
             }
         });
     }
