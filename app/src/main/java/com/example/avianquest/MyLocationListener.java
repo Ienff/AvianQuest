@@ -7,6 +7,10 @@ import com.baidu.mapapi.map.MyLocationData;
 import com.baidu.mapapi.map.BaiduMap;
 import com.baidu.mapapi.map.MapStatusUpdateFactory;
 import com.baidu.mapapi.model.LatLng;
+import com.baidu.mapapi.map.Polyline;
+import com.baidu.mapapi.map.PolylineOptions;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MyLocationListener extends BDAbstractLocationListener {
     private final BaiduMap mBaiduMap;
@@ -15,6 +19,10 @@ public class MyLocationListener extends BDAbstractLocationListener {
     private double lastLongitude = 0;
     private boolean shouldCenterMap = true;
     private float direction = 0;  // Default direction (North)
+
+    // Path tracking variables
+    private List<LatLng> trackPoints = new ArrayList<>();
+    private Polyline trackLine;
 
     public MyLocationListener(BaiduMap baiduMap) {
         this.mBaiduMap = baiduMap;
@@ -29,12 +37,64 @@ public class MyLocationListener extends BDAbstractLocationListener {
 
             updateLocationData();
 
+            // Add current point to track
+            LatLng currentPoint = new LatLng(lastLatitude, lastLongitude);
+            addTrackPoint(currentPoint);
+
             if (isFirstLocation || shouldCenterMap) {
                 centerMapToLocation();
                 isFirstLocation = false;
                 shouldCenterMap = false;
             }
         }
+    }
+
+    // Method to add a point to the track
+    private void addTrackPoint(LatLng point) {
+        // Only add points that are a minimum distance from the last point
+        if (!trackPoints.isEmpty()) {
+            LatLng lastPoint = trackPoints.get(trackPoints.size() - 1);
+            double distance = getDistance(lastPoint, point);
+
+            // If distance is less than 3 meters, don't add the point
+            if (distance < 3) {
+                return;
+            }
+        }
+
+        trackPoints.add(point);
+        drawTrack();
+    }
+
+    // Calculate distance between two points
+    private double getDistance(LatLng point1, LatLng point2) {
+        double earthRadius = 6371000; // meters
+        double dLat = Math.toRadians(point2.latitude - point1.latitude);
+        double dLng = Math.toRadians(point2.longitude - point1.longitude);
+        double a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(Math.toRadians(point1.latitude)) * Math.cos(Math.toRadians(point2.latitude)) *
+                        Math.sin(dLng/2) * Math.sin(dLng/2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        return earthRadius * c;
+    }
+
+    // Draw the track on the map
+    private void drawTrack() {
+        if (trackPoints.size() < 2) {
+            return; // Need at least 2 points to draw a line
+        }
+
+        if (trackLine != null) {
+            trackLine.remove(); // Remove existing line
+        }
+
+        // Create new polyline
+        PolylineOptions polylineOptions = new PolylineOptions()
+                .width(10) // Line width
+                .color(0xAAFF0000) // Red with transparency
+                .points(trackPoints);
+
+        trackLine = (Polyline) mBaiduMap.addOverlay(polylineOptions);
     }
 
     public void centerMapToLocation() {
@@ -48,7 +108,7 @@ public class MyLocationListener extends BDAbstractLocationListener {
         shouldCenterMap = true;
     }
 
-    // New method to update the direction
+    // Update the direction
     public void updateDirection(float newDirection) {
         this.direction = newDirection;
         updateLocationData();
