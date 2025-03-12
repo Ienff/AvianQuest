@@ -138,4 +138,8 @@ public class MyLocationListener extends BDAbstractLocationListener {
             mBaiduMap.setMyLocationData(locData);
         }
     }
+
+    public LatLng getLastLocation() {
+        return new LatLng(lastLatitude, lastLongitude);
+    }
 }

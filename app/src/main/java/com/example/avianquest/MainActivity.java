@@ -14,6 +14,7 @@ import com.baidu.location.LocationClient;
 import com.baidu.location.LocationClientOption;
 import com.baidu.mapapi.map.BaiduMap;
 import com.baidu.mapapi.map.MapView;
+import com.baidu.mapapi.map.MarkerOptions;
 import com.baidu.mapapi.map.MyLocationConfiguration;
 import android.Manifest;
 import android.content.pm.PackageManager;
@@ -32,6 +33,13 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import com.baidu.mapapi.model.LatLng;
+import com.baidu.mapapi.map.BitmapDescriptor;
+import com.baidu.mapapi.map.BitmapDescriptorFactory;
+//import com.baidu.mapapi.map.MarkerOptions;
+import com.baidu.mapapi.map.OverlayOptions;
+import java.util.ArrayList;
+import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
     private MapView mMapView = null;
@@ -39,7 +47,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private LocationClient mLocationClient;
     private MyLocationListener myLocationListener;
     private ActivityResultLauncher<Intent> createDocumentLauncher;
-
+    private List<SamplePoint> samplePoints = new ArrayList<>();
+    private Button btnAddSample;
+    private MarkerOptions markerOptions;
+    private BitmapDescriptor markerIcon;
 
     // Orientation sensors
     private SensorManager mSensorManager;
@@ -114,6 +125,22 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     }
                 }
         );
+
+        btnAddSample = findViewById(R.id.btn_add_sample);
+        markerIcon = BitmapDescriptorFactory.fromResource(R.drawable.ic_marker);
+        if (markerIcon == null) {
+            Log.e("MainActivity", "Failed to load marker icon");
+        } else {
+            Log.d("MainActivity", "Marker icon loaded successfully");
+        }
+        markerOptions = new MarkerOptions().icon(markerIcon).zIndex(9);
+
+        btnAddSample.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                addSamplePoint();
+            }
+        });
     }
 
     private void initOrientationSensor() {
@@ -179,6 +206,28 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         } catch (Exception e) {
             Log.e("MainActivity", "Error saving GPX file", e);
             Toast.makeText(this, "Error saving track: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void addSamplePoint() {
+        if (myLocationListener != null && myLocationListener.getLastLocation() != null) {
+            // Create sample point at current location
+            SamplePoint samplePoint = new SamplePoint(myLocationListener.getLastLocation());
+            samplePoints.add(samplePoint);
+
+            // Changed from MarkerOptions to OverlayOptions
+            OverlayOptions newMarker = new MarkerOptions()
+                    .icon(markerIcon)
+                    .position(samplePoint.getPosition())
+                    .title(samplePoint.getName())
+                    .zIndex(9);
+
+            // Add to map
+            mBaiduMap.addOverlay(newMarker);
+
+            Toast.makeText(this, "Sample point added", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(this, "Location not available", Toast.LENGTH_SHORT).show();
         }
     }
 

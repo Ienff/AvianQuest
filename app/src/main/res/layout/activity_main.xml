@@ -20,4 +20,11 @@
         android:layout_below="@id/btn_get_location"
         android:layout_marginTop="8dp"
         android:text="Export GPX" />
+    <Button
+        android:id="@+id/btn_add_sample"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Add Sample"
+        android:layout_below="@id/btn_export_gpx"
+        android:layout_marginTop="8dp"/>
 </RelativeLayout>
