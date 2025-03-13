@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">AvianQuest</string>
+    <string name="sample_image">Sample Image</string>
+    <string name="take_photo">Take Photo</string>
 </resources>

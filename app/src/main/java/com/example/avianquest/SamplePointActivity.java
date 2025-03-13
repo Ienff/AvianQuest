@@ -1,18 +1,21 @@
 package com.example.avianquest;
 
+import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
-import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
-
-import com.baidu.mapapi.model.LatLng;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -34,6 +37,8 @@ public class SamplePointActivity extends AppCompatActivity {
     private EditText statusEditText;
     private EditText remarksEditText;
     private Button saveButton;
+    private ImageView imageView;
+    private ActivityResultLauncher<Intent> takePhotoLauncher;
 
     private String samplePointId;
     private double latitude;
@@ -55,6 +60,8 @@ public class SamplePointActivity extends AppCompatActivity {
         statusEditText = findViewById(R.id.edit_status);
         remarksEditText = findViewById(R.id.edit_remarks);
         saveButton = findViewById(R.id.btn_save);
+        imageView = findViewById(R.id.imageView);
+        Button btnTakePhoto = findViewById(R.id.btn_take_photo);
 
         // Get data from intent
         Intent intent = getIntent();
@@ -74,6 +81,25 @@ public class SamplePointActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 saveSamplePoint();
+            }
+        });
+
+        // Initialize photo taking functionality
+        takePhotoLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                        Bundle extras = result.getData().getExtras();
+                        Bitmap imageBitmap = (Bitmap) extras.get("data");
+                        imageView.setImageBitmap(imageBitmap);
+                    }
+                }
+        );
+
+        btnTakePhoto.setOnClickListener(v -> {
+            Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+                takePhotoLauncher.launch(takePictureIntent);
             }
         });
     }
