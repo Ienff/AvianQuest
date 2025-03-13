@@ -41,6 +41,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".SamplePointActivity"
+            android:exported="false"
+            android:label="Sample Point" />
         <service android:name="com.baidu.location.f"
             android:enabled="true"
             android:process=":remote"/>

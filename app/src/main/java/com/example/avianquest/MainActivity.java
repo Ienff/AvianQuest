@@ -14,6 +14,7 @@ import com.baidu.location.LocationClient;
 import com.baidu.location.LocationClientOption;
 import com.baidu.mapapi.map.BaiduMap;
 import com.baidu.mapapi.map.MapView;
+import com.baidu.mapapi.map.Marker;
 import com.baidu.mapapi.map.MarkerOptions;
 import com.baidu.mapapi.map.MyLocationConfiguration;
 import android.Manifest;
@@ -58,6 +59,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private static final int WRITE_EXTERNAL_STORAGE_REQUEST_CODE = 1001;
 
+    private boolean markerClickListenerSet = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -216,14 +218,41 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             samplePoints.add(samplePoint);
 
             // Changed from MarkerOptions to OverlayOptions
+            final LatLng position = samplePoint.getPosition();
+            final String samplePointId = samplePoint.getId();
+
             OverlayOptions newMarker = new MarkerOptions()
                     .icon(markerIcon)
-                    .position(samplePoint.getPosition())
+                    .position(position)
                     .title(samplePoint.getName())
                     .zIndex(9);
 
-            // Add to map
-            mBaiduMap.addOverlay(newMarker);
+            // Add to map with click listener
+            Marker marker = (Marker) mBaiduMap.addOverlay(newMarker);
+            marker.setExtraInfo(new Bundle());
+            marker.getExtraInfo().putString("sample_point_id", samplePointId);
+
+            // Set click listener for all markers
+            if (!markerClickListenerSet) {
+                mBaiduMap.setOnMarkerClickListener(new BaiduMap.OnMarkerClickListener() {
+                    @Override
+                    public boolean onMarkerClick(Marker marker) {
+                        Bundle extraInfo = marker.getExtraInfo();
+                        if (extraInfo != null && extraInfo.containsKey("sample_point_id")) {
+                            String id = extraInfo.getString("sample_point_id");
+                            // Open SamplePointActivity with the selected marker's data
+                            Intent intent = new Intent(MainActivity.this, SamplePointActivity.class);
+                            intent.putExtra(SamplePointActivity.EXTRA_LATITUDE, marker.getPosition().latitude);
+                            intent.putExtra(SamplePointActivity.EXTRA_LONGITUDE, marker.getPosition().longitude);
+                            intent.putExtra(SamplePointActivity.EXTRA_SAMPLE_POINT_ID, id);
+                            startActivity(intent);
+                            return true;
+                        }
+                        return false;
+                    }
+                });
+                markerClickListenerSet = true;
+            }
 
             Toast.makeText(this, "Sample point added", Toast.LENGTH_SHORT).show();
         } else {
