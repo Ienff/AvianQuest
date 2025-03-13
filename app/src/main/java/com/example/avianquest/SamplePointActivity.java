@@ -72,6 +72,11 @@ public class SamplePointActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sample_point);
 
+        // Hide the action bar
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().hide();
+        }
+
         // Initialize HTTP client
         client = new OkHttpClient.Builder()
                 .connectTimeout(15, TimeUnit.SECONDS)
