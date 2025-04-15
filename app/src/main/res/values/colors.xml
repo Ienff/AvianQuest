@@ -11,4 +11,11 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <color name="primary">#006C51</color>
+    <color name="secondary">#4C6B63</color>
+    <color name="tertiary">#3F6373</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="background">#FAFAFA</color>
 </resources>
+

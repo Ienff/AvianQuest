@@ -39,6 +39,9 @@ import com.baidu.mapapi.map.BitmapDescriptor;
 import com.baidu.mapapi.map.BitmapDescriptorFactory;
 //import com.baidu.mapapi.map.MarkerOptions;
 import com.baidu.mapapi.map.OverlayOptions;
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
 import java.util.ArrayList;
 import java.util.UUID;
 
@@ -67,9 +70,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         setContentView(R.layout.activity_main);
 
         // Hide the action bar
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().hide();
-        }
+//        if (getSupportActionBar() != null) {
+//            getSupportActionBar().hide();
+//        }
 
         // 同意隐私协议
         LocationClient.setAgreePrivacy(true);
@@ -77,6 +80,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         // 获取地图控件引用
         mMapView = findViewById(R.id.bmapView);
         mBaiduMap = mMapView.getMap();
+
+        // 不显示“+-”按钮，因为和“导出”按钮重合了
+        mMapView.showZoomControls(false);
+
         // 卫星地图
         mBaiduMap.setMapType(BaiduMap.MAP_TYPE_SATELLITE);
 
@@ -133,7 +140,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 }
         );
 
-        btnAddSample = findViewById(R.id.btn_add_sample);
+        MaterialButton btnAddSample = findViewById(R.id.btn_add_sample);
         markerIcon = BitmapDescriptorFactory.fromResource(R.drawable.ic_marker);
         if (markerIcon == null) {
             Log.e("MainActivity", "Failed to load marker icon");
