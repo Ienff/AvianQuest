@@ -1,5 +1,6 @@
 package com.example.avianquest;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -153,6 +154,20 @@ public class SurveyFragment extends Fragment implements SensorEventListener {
         if (GpxExporter.exportToGpx(requireContext(), trackPoints)) {
             Toast.makeText(requireContext(), "轨迹导出成功", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    public boolean onExitSurvey(Runnable onConfirm) {
+        new AlertDialog.Builder(requireContext())
+                .setTitle("提示")
+                .setMessage("退出调查界面后就将保存样线，无法继续更新，确认离开吗？")
+                .setPositiveButton("确认", (dialog, which) -> {
+                    // Export track points before leaving
+                    exportSamplePoints();
+                    onConfirm.run();
+                })
+                .setNegativeButton("取消", null)
+                .show();
+        return false;
     }
 
     @Override
