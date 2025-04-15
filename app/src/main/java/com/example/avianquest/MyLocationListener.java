@@ -34,6 +34,10 @@ public class MyLocationListener extends BDAbstractLocationListener {
         if (location != null && mBaiduMap != null) {
             lastLatitude = location.getLatitude();
             lastLongitude = location.getLongitude();
+            LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+            double altitude = location.getAltitude();
+            addTrackPoint(latLng, altitude);
+
             Log.d("Location", "Latitude: " + lastLatitude + ", Longitude: " + lastLongitude);
 
             updateLocationData();
@@ -63,7 +67,7 @@ public class MyLocationListener extends BDAbstractLocationListener {
             }
         }
 
-        TrackPoint trackPoint = new TrackPoint(point, new Date(), altitude);
+        TrackPoint trackPoint = new TrackPoint(point, altitude, System.currentTimeMillis());
         trackPoints.add(trackPoint);
         drawTrack();
     }

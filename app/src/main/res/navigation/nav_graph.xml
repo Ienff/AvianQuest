@@ -1,0 +1,18 @@
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/navigation_encyclopedia">
+    
+    <fragment
+        android:id="@+id/navigation_encyclopedia"
+        android:name="com.example.avianquest.EncyclopediaFragment"
+        android:label="百科"
+        tools:layout="@layout/fragment_encyclopedia" />
+
+    <fragment
+        android:id="@+id/navigation_survey"
+        android:name="com.example.avianquest.SurveyFragment"
+        android:label="调查"
+        tools:layout="@layout/fragment_survey" />
+</navigation>

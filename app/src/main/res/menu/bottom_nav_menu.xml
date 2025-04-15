@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/navigation_encyclopedia"
+        android:icon="@drawable/ic_encyclopedia"
+        android:title="百科" />
+    <item
+        android:id="@+id/navigation_survey"
+        android:icon="@drawable/ic_survey"
+        android:title="调查" />
+    <item
+        android:id="@+id/navigation_records"
+        android:icon="@drawable/ic_records"
+        android:title="记录" />
+</menu>

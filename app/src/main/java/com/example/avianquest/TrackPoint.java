@@ -4,25 +4,17 @@ import com.baidu.mapapi.model.LatLng;
 import java.util.Date;
 
 public class TrackPoint {
-    private final LatLng latLng;
-    private final Date timestamp;
-    private final double altitude;
+    private LatLng latLng;
+    private double altitude;
+    private long timestamp;
 
-    public TrackPoint(LatLng latLng, Date timestamp, double altitude) {
+    public TrackPoint(LatLng latLng, double altitude, long timestamp) {
         this.latLng = latLng;
-        this.timestamp = timestamp;
         this.altitude = altitude;
+        this.timestamp = timestamp;
     }
 
-    public LatLng getLatLng() {
-        return latLng;
-    }
-
-    public Date getTimestamp() {
-        return timestamp;
-    }
-
-    public double getAltitude() {
-        return altitude;
-    }
+    public LatLng getLatLng() { return latLng; }
+    public double getAltitude() { return altitude; }
+    public long getTimestamp() { return timestamp; }
 }
