@@ -2,6 +2,7 @@ package com.example.avianquest;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -127,14 +128,22 @@ public class SurveyFragment extends Fragment implements SensorEventListener {
             marker.getExtraInfo().putString("sample_point_id", samplePoint.getId());
 
             if (!markerClickListenerSet) {
-                mBaiduMap.setOnMarkerClickListener(clickedMarker -> {
-                    Bundle extraInfo = clickedMarker.getExtraInfo();
-                    if (extraInfo != null && extraInfo.containsKey("sample_point_id")) {
-                        String id = extraInfo.getString("sample_point_id");
-                        Toast.makeText(requireContext(), "Marker ID: " + id, Toast.LENGTH_SHORT).show();
-                        return true;
+                mBaiduMap.setOnMarkerClickListener(new BaiduMap.OnMarkerClickListener() {
+                    @Override
+                    public boolean onMarkerClick(Marker marker) {
+                        Bundle extraInfo = marker.getExtraInfo();
+                        if (extraInfo != null && extraInfo.containsKey("sample_point_id")) {
+                            String id = extraInfo.getString("sample_point_id");
+                            // Open SamplePointActivity with the selected marker's data
+                            Intent intent = new Intent(requireContext(), SamplePointActivity.class);
+                            intent.putExtra(SamplePointActivity.EXTRA_LATITUDE, marker.getPosition().latitude);
+                            intent.putExtra(SamplePointActivity.EXTRA_LONGITUDE, marker.getPosition().longitude);
+                            intent.putExtra(SamplePointActivity.EXTRA_SAMPLE_POINT_ID, id);
+                            startActivity(intent);
+                            return true;
+                        }
+                        return false;
                     }
-                    return false;
                 });
                 markerClickListenerSet = true;
             }
