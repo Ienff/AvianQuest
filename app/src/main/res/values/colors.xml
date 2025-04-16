@@ -17,5 +17,16 @@
     <color name="tertiary">#3F6373</color>
     <color name="surface">#FFFFFF</color>
     <color name="background">#FAFAFA</color>
-</resources>
 
+    <!-- Background color -->
+    <color name="background_color">#FFFFFF</color> <!-- White background -->
+
+    <!-- Primary text color -->
+    <color name="text_primary">#212121</color> <!-- Dark gray for text -->
+
+    <!-- Hint text color -->
+    <color name="text_hint">#757575</color> <!-- Light gray for hints -->
+
+    <!-- Icon tint color -->
+    <color name="icon_tint">#6200EE</color> <!-- Purple for icons -->
+</resources>
