@@ -1,5 +1,6 @@
 package com.example.avianquest;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -7,6 +8,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -15,19 +17,26 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.baidu.location.BDAbstractLocationListener;
+import com.baidu.location.BDLocation;
 import com.baidu.location.LocationClient;
 import com.baidu.location.LocationClientOption;
 import com.baidu.mapapi.map.BaiduMap;
 import com.baidu.mapapi.map.BitmapDescriptor;
 import com.baidu.mapapi.map.BitmapDescriptorFactory;
+import com.baidu.mapapi.map.MapStatusUpdate;
+import com.baidu.mapapi.map.MapStatusUpdateFactory;
 import com.baidu.mapapi.map.MapView;
 import com.baidu.mapapi.map.Marker;
 import com.baidu.mapapi.map.MarkerOptions;
 import com.baidu.mapapi.map.MyLocationConfiguration;
+import com.baidu.mapapi.map.MyLocationData;
 import com.baidu.mapapi.model.LatLng;
 
 import java.util.ArrayList;
@@ -45,6 +54,101 @@ public class SurveyFragment extends Fragment implements SensorEventListener {
     private boolean markerClickListenerSet = false;
     private Button btnExport;
     private List<TrackPoint> trackPoints = new ArrayList<>();
+    private ActivityResultLauncher<Intent> saveFileLauncher;
+
+    private class MyLocationListener extends BDAbstractLocationListener {
+        private final BaiduMap mBaiduMap;
+        private BDLocation lastLocation;
+        private boolean shouldCenter = true;
+        private float direction = 0;
+        private SurveyFragment fragment;
+
+        public MyLocationListener(BaiduMap baiduMap) {
+            this.mBaiduMap = baiduMap;
+            this.fragment = SurveyFragment.this;
+        }
+
+        @Override
+        public void onReceiveLocation(BDLocation location) {
+            if (location == null || mBaiduMap == null) return;
+
+            lastLocation = location;
+            LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+            double altitude = location.getAltitude();
+
+            // Add track point
+            addTrackPoint(latLng, altitude);
+
+            MyLocationData.Builder builder = new MyLocationData.Builder()
+                    .accuracy(location.getRadius())
+                    .direction(direction)
+                    .latitude(location.getLatitude())
+                    .longitude(location.getLongitude());
+            mBaiduMap.setMyLocationData(builder.build());
+
+            if (shouldCenter) {
+                centerMapToLocation();
+                shouldCenter = false;
+            }
+        }
+
+        public void requestCenterOnNextLocation() {
+            shouldCenter = true;
+        }
+
+        public void centerMapToLocation() {
+            if (lastLocation != null) {
+                LatLng latLng = new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude());
+                MapStatusUpdate status = MapStatusUpdateFactory.newLatLng(latLng);
+                mBaiduMap.animateMapStatus(status);
+            }
+        }
+
+        public void updateDirection(float direction) {
+            this.direction = direction;
+            if (lastLocation != null) {
+                MyLocationData.Builder builder = new MyLocationData.Builder()
+                        .accuracy(lastLocation.getRadius())
+                        .direction(direction)
+                        .latitude(lastLocation.getLatitude())
+                        .longitude(lastLocation.getLongitude());
+                mBaiduMap.setMyLocationData(builder.build());
+            }
+        }
+
+        public BDLocation getLastLocation() {
+            return lastLocation;
+        }
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        saveFileLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == Activity.RESULT_OK) {
+                        Intent data = result.getData();
+                        if (data != null) {
+                            Uri uri = data.getData();
+                            if (GpxExporter.saveGpxToUri(requireContext(), uri, trackPoints)) {
+                                Toast.makeText(requireContext(), "轨迹导出成功", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    }
+                }
+        );
+    }
+
+    private void exportSamplePoints() {
+        if (trackPoints.isEmpty()) {
+            Toast.makeText(requireContext(), "没有轨迹数据可导出", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        GpxExporter.createSaveFileIntent(requireContext(), trackPoints, saveFileLauncher);
+    }
 
     @Nullable
     @Override
@@ -113,7 +217,9 @@ public class SurveyFragment extends Fragment implements SensorEventListener {
 
     private void addSamplePoint() {
         if (myLocationListener != null && myLocationListener.getLastLocation() != null) {
-            SamplePoint samplePoint = new SamplePoint(myLocationListener.getLastLocation());
+            BDLocation location = myLocationListener.getLastLocation();
+            LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+            SamplePoint samplePoint = new SamplePoint(latLng);
             samplePoints.add(samplePoint);
 
             LatLng position = samplePoint.getPosition();
@@ -157,12 +263,6 @@ public class SurveyFragment extends Fragment implements SensorEventListener {
     private void addTrackPoint(LatLng latLng, double altitude) {
         TrackPoint trackPoint = new TrackPoint(latLng, altitude, System.currentTimeMillis());
         trackPoints.add(trackPoint);
-    }
-
-    private void exportSamplePoints() {
-        if (GpxExporter.exportToGpx(requireContext(), trackPoints)) {
-            Toast.makeText(requireContext(), "轨迹导出成功", Toast.LENGTH_SHORT).show();
-        }
     }
 
     public boolean onExitSurvey(Runnable onConfirm) {
