@@ -10,7 +10,7 @@ import java.util.UUID;
 public class SamplePoint {
     private String id;
     private LatLng position;
-    private Date time;
+    private String time;
     private String birdSpecies;
     private String gender;
     private int quantity;
@@ -23,8 +23,19 @@ public class SamplePoint {
     public SamplePoint(LatLng position) {
         this.id = UUID.randomUUID().toString();
         this.position = position;
-        this.time = new Date();
-        this.name = "Sample #" + new SimpleDateFormat("MMdd-HHmm", Locale.getDefault()).format(time);
+        // Format current time
+        SimpleDateFormat dateFormat = new SimpleDateFormat("MMdd-HHmm", Locale.getDefault());
+        this.time = dateFormat.format(new Date());
+        this.name = "Sample #" + this.time;
+    }
+
+    public SamplePoint(String id, LatLng position) {
+        this.id = id;
+        this.position = position;
+        // Format current time
+        SimpleDateFormat dateFormat = new SimpleDateFormat("MMdd-HHmm", Locale.getDefault());
+        this.time = dateFormat.format(new Date());
+        this.name = "Sample #" + id;
     }
 
     // Getters and setters
@@ -33,8 +44,8 @@ public class SamplePoint {
     public LatLng getPosition() { return position; }
     public void setPosition(LatLng position) { this.position = position; }
 
-    public Date getTime() { return time; }
-    public void setTime(Date time) { this.time = time; }
+    public String getTime() { return time; }
+    public void setTime(String time) { this.time = time; }
 
     public String getBirdSpecies() { return birdSpecies; }
     public void setBirdSpecies(String birdSpecies) { this.birdSpecies = birdSpecies; }

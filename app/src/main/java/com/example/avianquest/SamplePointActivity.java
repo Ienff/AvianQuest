@@ -1,7 +1,9 @@
 package com.example.avianquest;
 
 import android.app.Activity;
+import android.content.ContentValues;
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -278,9 +280,32 @@ public class SamplePointActivity extends AppCompatActivity {
         String status = statusEditText.getText().toString();
         String remarks = remarksEditText.getText().toString();
 
-        // TODO: Save the updated sample point to your storage mechanism
-        Toast.makeText(this, "Sample point saved successfully", Toast.LENGTH_SHORT).show();
-        finish();
+        // Save to database
+        DatabaseHelper dbHelper = new DatabaseHelper(this);
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put(DatabaseHelper.COLUMN_ID, samplePointId);
+        values.put(DatabaseHelper.COLUMN_TIME, time);
+        values.put(DatabaseHelper.COLUMN_LATITUDE, latitude);
+        values.put(DatabaseHelper.COLUMN_LONGITUDE, longitude);
+        values.put(DatabaseHelper.COLUMN_BIRD_SPECIES, birdSpecies);
+        values.put(DatabaseHelper.COLUMN_GENDER, gender);
+        values.put(DatabaseHelper.COLUMN_QUANTITY, quantity);
+        values.put(DatabaseHelper.COLUMN_HABITAT_TYPE, habitatType);
+        values.put(DatabaseHelper.COLUMN_DISTANCE, distanceToLine);
+        values.put(DatabaseHelper.COLUMN_STATUS, status);
+        values.put(DatabaseHelper.COLUMN_REMARKS, remarks);
+
+        long newRowId = db.insert(DatabaseHelper.TABLE_SAMPLE_POINTS, null, values);
+        db.close();
+
+        if (newRowId != -1) {
+            Toast.makeText(this, "保存成功", Toast.LENGTH_SHORT).show();
+            finish();
+        } else {
+            Toast.makeText(this, "保存失败", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private String getSelectedGender() {

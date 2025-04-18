@@ -15,4 +15,10 @@
         android:name="com.example.avianquest.SurveyFragment"
         android:label="调查"
         tools:layout="@layout/fragment_survey" />
+
+    <fragment
+        android:id="@+id/navigation_records"
+        android:name="com.example.avianquest.RecordsFragment"
+        android:label="记录"
+        tools:layout="@layout/fragment_records" />
 </navigation>

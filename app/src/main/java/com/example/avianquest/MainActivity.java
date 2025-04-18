@@ -2,7 +2,6 @@ package com.example.avianquest;
 
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.NavigationUI;
@@ -22,23 +21,12 @@ public class MainActivity extends AppCompatActivity {
                 .findFragmentById(R.id.nav_host_fragment);
         navController = navHostFragment.getNavController();
 
-        // Set up custom navigation listener
-        bottomNav.setOnItemSelectedListener(item -> {
-            Fragment currentFragment = getSupportFragmentManager()
-                    .findFragmentById(R.id.nav_host_fragment)
-                    .getChildFragmentManager()
-                    .getFragments().get(0);
+        // Use standard navigation
+        NavigationUI.setupWithNavController(bottomNav, navController);
+    }
 
-            if (currentFragment instanceof SurveyFragment) {
-                if (item.getItemId() == R.id.navigation_encyclopedia ||
-                        item.getItemId() == R.id.navigation_records) {
-                    return ((SurveyFragment) currentFragment).onExitSurvey(() -> {
-                        navController.navigate(item.getItemId());
-                        item.setChecked(true);
-                    });
-                }
-            }
-            return NavigationUI.onNavDestinationSelected(item, navController);
-        });
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
     }
 }
