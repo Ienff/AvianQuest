@@ -8,6 +8,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.baidu.mapapi.model.LatLng;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class RecordsAdapter extends RecyclerView.Adapter<RecordsAdapter.ViewHolder> {
@@ -52,8 +55,16 @@ public class RecordsAdapter extends RecyclerView.Adapter<RecordsAdapter.ViewHold
         return samplePoints.size();
     }
 
+//    public void updateData(List<SamplePoint> newPoints) {
+//        this.samplePoints = newPoints;
+//        notifyDataSetChanged();
+//    }
     public void updateData(List<SamplePoint> newPoints) {
-        this.samplePoints = newPoints;
+        // 创建新列表以避免修改原始数据
+        List<SamplePoint> sortedPoints = new ArrayList<>(newPoints);
+        // 使用 Comparator 按时间字符串进行排序
+        Collections.sort(sortedPoints, Comparator.comparing(SamplePoint::getTime));
+        this.samplePoints = sortedPoints;
         notifyDataSetChanged();
     }
 }
