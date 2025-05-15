@@ -37,6 +37,8 @@ import com.baidu.mapapi.map.Marker;
 import com.baidu.mapapi.map.MarkerOptions;
 import com.baidu.mapapi.map.MyLocationConfiguration;
 import com.baidu.mapapi.map.MyLocationData;
+import com.baidu.mapapi.map.Polyline;
+import com.baidu.mapapi.map.PolylineOptions;
 import com.baidu.mapapi.model.LatLng;
 
 import java.util.ArrayList;
@@ -55,6 +57,8 @@ public class SurveyFragment extends Fragment implements SensorEventListener {
     private Button btnExport;
     private List<TrackPoint> trackPoints = new ArrayList<>();
     private ActivityResultLauncher<Intent> saveFileLauncher;
+    private Polyline trackLine;
+    private List<LatLng> trackLatLngs = new ArrayList<>();
 
     private class MyLocationListener extends BDAbstractLocationListener {
         private final BaiduMap mBaiduMap;
@@ -261,8 +265,48 @@ public class SurveyFragment extends Fragment implements SensorEventListener {
     }
 
     private void addTrackPoint(LatLng latLng, double altitude) {
+        // 只有当与上一个点距离超过3米时才添加新点
+        if (!trackLatLngs.isEmpty()) {
+            LatLng lastPoint = trackLatLngs.get(trackLatLngs.size() - 1);
+            double distance = getDistance(lastPoint, latLng);
+            if (distance < 3) {
+                return;
+            }
+        }
+
+        trackLatLngs.add(latLng);
         TrackPoint trackPoint = new TrackPoint(latLng, altitude, System.currentTimeMillis());
         trackPoints.add(trackPoint);
+
+        drawTrack();
+    }
+
+    private void drawTrack() {
+        if (trackLatLngs.size() < 2) {
+            return;
+        }
+
+        if (trackLine != null) {
+            trackLine.remove();
+        }
+
+        PolylineOptions polylineOptions = new PolylineOptions()
+                .width(10)
+                .color(0xAAFF0000)  // 红色半透明
+                .points(trackLatLngs);
+
+        trackLine = (Polyline) mBaiduMap.addOverlay(polylineOptions);
+    }
+
+    private double getDistance(LatLng point1, LatLng point2) {
+        double earthRadius = 6371000; // meters
+        double dLat = Math.toRadians(point2.latitude - point1.latitude);
+        double dLng = Math.toRadians(point2.longitude - point1.longitude);
+        double a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(Math.toRadians(point1.latitude)) * Math.cos(Math.toRadians(point2.latitude)) *
+                        Math.sin(dLng/2) * Math.sin(dLng/2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        return earthRadius * c;
     }
 
     public boolean onExitSurvey(Runnable onConfirm) {

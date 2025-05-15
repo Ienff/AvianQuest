@@ -68,4 +68,8 @@ dependencies {
     implementation libs.androidx.navigation.ui
     implementation libs.androidx.activity
     implementation libs.itext7.core
+    androidTestImplementation libs.androidx.core
+    androidTestImplementation libs.androidx.junit.v121
+    androidTestImplementation libs.androidx.espresso.core.v361
+    androidTestImplementation libs.androidx.fragment.testing
 }
